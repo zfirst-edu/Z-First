@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Z First Speaking</title>
+<style>
+:root{
+  --bg:#f5f4f0; --card:#ffffff; --ink:#1d1f24; --muted:#6b6f78; --line:#e3e1da;
+  --accent:#d1343f; --accent-ink:#ffffff; --ok:#1f8a5b; --warn:#c77700; --soft:#f0eee8;
+  --bar:#e9e6de;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#15161a; --card:#1e2026; --ink:#eceae4; --muted:#9a9ea8; --line:#2e3139;
+    --accent:#ff5a63; --accent-ink:#15161a; --ok:#4cc38a; --warn:#f0a73a; --soft:#262931; --bar:#2c2f37;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#15161a; --card:#1e2026; --ink:#eceae4; --muted:#9a9ea8; --line:#2e3139;
+  --accent:#ff5a63; --accent-ink:#15161a; --ok:#4cc38a; --warn:#f0a73a; --soft:#262931; --bar:#2c2f37;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:720px;margin:0 auto;padding:20px 16px 60px}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:12px}
+.brand{font-weight:800;letter-spacing:-.02em;font-size:20px}
+.brand b{color:var(--accent)}
+.who{font-size:13px;color:var(--muted);text-align:right}
+.who a{color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px}
+h1{font-size:26px;line-height:1.2;margin:0 0 6px;letter-spacing:-.02em}
+h2{font-size:18px;margin:0 0 10px}
+p{margin:0 0 12px}
+.muted{color:var(--muted)}
+label{display:block;font-size:14px;font-weight:600;margin:14px 0 6px}
+input{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit}
+input:focus{outline:2px solid var(--accent);outline-offset:1px}
+.btn{appearance:none;border:0;border-radius:12px;padding:14px 20px;font-family:inherit;font-weight:600;font-size:16px;line-height:1;cursor:pointer;background:var(--accent);color:var(--accent-ink);display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px}
+.btn.block{width:100%}
+.btn.ghost{background:var(--soft);color:var(--ink)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.units{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.unit{text-align:left;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;cursor:pointer;color:var(--ink);font:inherit}
+.unit:hover{border-color:var(--accent)}
+.unit .n{font-size:12px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.06em}
+.unit .t{font-weight:700;font-size:17px;margin-top:2px}
+.unit .s{font-size:13px;color:var(--muted);margin-top:4px}
+ul.rules{padding-left:20px;margin:0 0 6px}
+ul.rules li{margin:4px 0}
+.steps{display:flex;gap:6px;margin-bottom:16px}
+.steps i{flex:1;height:5px;border-radius:3px;background:var(--bar)}
+.steps i.done{background:var(--ok)} .steps i.cur{background:var(--accent)}
+.qmeta{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.question{font-size:22px;line-height:1.35;font-weight:650;margin:6px 0 18px;letter-spacing:-.01em}
+.hidden-q{border:2px dashed var(--line);border-radius:14px;padding:28px 16px;text-align:center;color:var(--muted);margin-bottom:18px}
+.timer{font-variant-numeric:tabular-nums;font-size:44px;font-weight:800;letter-spacing:-.02em;line-height:1}
+.phase{display:flex;align-items:center;gap:10px;font-weight:700;margin-bottom:10px}
+.dot{width:12px;height:12px;border-radius:50%;background:var(--accent);animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.25}}
+.prog{height:8px;background:var(--bar);border-radius:4px;overflow:hidden;margin:12px 0}
+.prog > div{height:100%;background:var(--accent);width:0;transition:width .2s linear}
+.prog.prep > div{background:var(--warn)}
+.meter{height:6px;background:var(--bar);border-radius:3px;overflow:hidden;margin-top:6px}
+.meter > div{height:100%;width:0;background:var(--ok);transition:width .08s}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.chip{font-size:13px;padding:4px 10px;border-radius:999px;background:var(--soft);color:var(--muted)}
+.chip.ok{color:var(--ok)} .chip.err{color:var(--accent)}
+.score{display:flex;align-items:baseline;gap:6px}
+.score .big{font-size:72px;font-weight:850;letter-spacing:-.04em;line-height:1}
+.score .of{font-size:22px;color:var(--muted);font-weight:700}
+.crit{display:grid;gap:10px;margin-top:18px}
+.crit .l{display:flex;justify-content:space-between;font-size:14px;font-weight:600}
+.crit .l span:last-child{font-variant-numeric:tabular-nums;color:var(--muted)}
+.qres{margin-top:14px;border-top:1px solid var(--line);padding-top:14px}
+.qres h3{font-size:15px;margin:0 0 4px;display:flex;justify-content:space-between;gap:10px}
+.qres .tr{font-size:14px;color:var(--muted);background:var(--soft);border-radius:10px;padding:10px 12px;margin:8px 0;font-style:italic}
+.mis{font-size:14px;margin:6px 0}
+.mis s{color:var(--accent);text-decoration-thickness:1px}
+.mis b{color:var(--ok)}
+.tip{font-size:14px;border-left:3px solid var(--ok);padding-left:10px;margin-top:8px}
+.warnbox{background:var(--soft);border-left:3px solid var(--warn);padding:10px 12px;border-radius:8px;font-size:14px;margin:12px 0}
+.spinner{width:36px;height:36px;border:4px solid var(--bar);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:10px auto 16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.center{text-align:center}
+.mt{margin-top:16px}
+@media (max-width:480px){ .question{font-size:19px} .score .big{font-size:60px} .card{padding:18px} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">Z <b>First</b> · Speaking</div>
+    <div class="who" id="who"></div>
+  </header>
+  <main id="app"></main>
+</div>
+
+<script>
+/* ================= CONFIG ================= */
+// Paste the Apps Script web-app URL (…/exec). Empty = demo mode (fake scores, nothing is saved).
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzP1ld3Me53V2FEC_jdPRmlY_8-xZidOv2yxIX9blnZRS4nap5BRBZMswR1BQEgWYRo/exec';
+const PLAN = [ // which question types a session contains, in order
+  { type:'warmup',     time:45, prep:10 },
+  { type:'long',       time:90, prep:20 },
+  { type:'discussion', time:60, prep:15 },
+  { type:'discussion', time:60, prep:15 },
+];
+const TYPE_NAME = { warmup:'Warm-up', long:'Long turn', discussion:'Discussion' };
+const MIN_SECONDS = 5; // the "finish" button unlocks after this
+
+/* ================= QUESTION BANK (edit freely) ================= */
+const BOOK = 'Solutions Upper-Intermediate (3rd ed.)';
+const UNITS = [
+{ id:0, title:'Introduction', topics:'Friends · Life events · Present, future and past tenses',
+  vocab:['accuse sb of','apologise for','insist on','remind sb about','expect','warn sb against','advise','put up with','be an infant / a toddler','be in your teens','be middle-aged','be elderly','grow up','settle down','emigrate','move house','leave home','get engaged','split up','inherit','start a family'],
+  grammar:['verb patterns: verb + infinitive / -ing','present simple and present continuous','will and going to','past simple, past continuous, past perfect','present perfect simple and continuous'],
+  questions:{
+    warmup:['What do you think is the most important quality in a best friend?','How did you meet your closest friend?','What annoying habits do your friends have?','What are you going to do this weekend?','Which stage of life do you think is the happiest? Why?'],
+    long:['Talk about a memorable event from your childhood. What happened, who was there, and why do you still remember it?','Describe a friend who has had an important influence on your life. How did you meet, what is he or she like, and how has this person changed you?','Describe the most important events in the life of an older member of your family. How has their life been different from yours?','Talk about a time when you argued with a friend. What happened, how did you feel, and how did you resolve it?'],
+    discussion:['Is it possible to stay best friends with someone for your whole life? Why or why not?','Do you think young people today grow up too quickly? Why?','Should friends always be completely honest with each other, even if the truth hurts?','At what age should young people leave home and live independently? Why?','How do you think your life will be different ten years from now?']
+  }},
+{ id:1, title:'Fame', topics:'Personality · The media · Vloggers · Celebrities',
+  vocab:['bossy','cautious','considerate','eccentric','gullible','industrious','insecure','judgemental','outgoing','selfless','shrewd','spontaneous','stingy','stubborn','vain','easy-going','open-minded','quick-witted','self-confident','single-minded','thick-skinned','paparazzi','in the public eye','invasion of privacy','followers','subscribers','vlogger','go viral','exhausted','fascinated','terrified','thrilled','absolutely'],
+  grammar:['past perfect simple and past perfect continuous','used to and would','position and order of adjectives','extreme adjectives with absolutely / completely / really'],
+  questions:{
+    warmup:['Which three adjectives best describe your personality? Why?','Who is the most famous person you have ever seen or met?','Do you watch any vloggers or YouTubers? Who and why?','What did you use to do as a child that you don\'t do any more?','Would you like to be famous? Why or why not?'],
+    long:['Describe a famous person you admire. What is he or she famous for, what is his or her personality like, and why do you admire this person?','Talk about the advantages and disadvantages of being a celebrity. Give examples of real people if you can.','Describe a vlogger or social media star who is popular in your country. Why do you think people follow him or her?','Talk about how your interests and habits have changed since you were a small child. Use "used to" and "would" where possible.'],
+    discussion:['Should celebrities have the right to a private life, or is media attention part of the job?','Why do so many teenagers today want to become famous vloggers?','Is it fair that some people become famous without any real talent? Why?','Should the paparazzi be allowed to use drones to photograph celebrities?','Are celebrities good role models for young people? Why or why not?']
+  }},
+{ id:2, title:'Problems', topics:'Feelings · Idioms · Crime · Living with others',
+  vocab:['anxious','ashamed','bitter','content','disillusioned','envious','exasperated','frustrated','furious','humiliated','indecisive','irritated','miserable','stunned','upbeat','over the moon','down in the dumps','blow your top','be on edge','get on your nerves','green with envy','lose face','in two minds','crime rate','commit a crime','prevent crime','crime prevention','CCTV'],
+  grammar:['comparative structures (far, much, nowhere near as … as, not quite as … as)','infinitives and -ing forms','I\'d rather / I\'d sooner','be supposed to','provided that / providing / on condition that / even though / even if'],
+  questions:{
+    warmup:['What really gets on your nerves?','When was the last time you were over the moon about something?','How do you usually feel before an important exam?','Are you good in a crisis? Give an example.','What do you do when you feel down in the dumps?'],
+    long:['Describe a situation when you felt really frustrated or furious. What happened, how did you react, and what did you learn from it?','Imagine you are sharing a flat with a friend. Talk about the problems that could happen and the rules you would agree on to avoid arguments.','Talk about the biggest problems teenagers face today. Which one do you think is the most serious, and why?','Describe a time when you had to deal with an emergency or a difficult situation. What did you do?'],
+    discussion:['Is it better to show your feelings openly or to keep them to yourself? Why?','Do CCTV cameras in streets and schools make people safer, or do they invade our privacy?','Is life for teenagers today far more stressful than it was for their parents?','Which is the best way to reduce crime: stricter punishment or better education?','Would you rather live alone or share a flat with friends? Why?']
+  }},
+{ id:3, title:'Customs and culture', topics:'Gestures · Body language · Celebrations · Cultural differences',
+  vocab:['bite your fingernails','bow your head','cross your fingers','fold your arms','frown','grin','nod your head','raise your eyebrows','scowl','shrug your shoulders','wink','yawn','clear your throat','sigh','gasp','sneeze','custom','taboo','tradition','etiquette','down-to-earth','well-off','good-looking'],
+  grammar:['modals: advice, obligation, necessity (should, must, have to, ought to)','modals: possibility and certainty (may, might, could, must, can\'t)','modals in the past: should have, needn\'t have, didn\'t need to','first conditional for predictions'],
+  questions:{
+    warmup:['Which gestures do you use most often when you speak?','What is your favourite holiday or celebration? Why?','How do people in Uzbekistan usually greet each other?','Have you ever been embarrassed because of a cultural misunderstanding?','What is considered rude in your culture?'],
+    long:['Describe how people in your country celebrate an important family occasion, such as a wedding. Talk about the preparations, the customs and the food.','Imagine a foreign student is coming to live with your family. Explain how he or she should and shouldn\'t behave in your home and in public.','Talk about an important national festival in your country, such as Navruz. How do people celebrate it, and what does it mean to them?','Describe a time when you or someone you know did something wrong in a social situation. What should they have done instead?'],
+    discussion:['Is body language more important than words in communication? Why?','Should visitors always follow local customs, even if they disagree with them?','Are traditional celebrations becoming less important for young people today?','How can people avoid misunderstandings when they travel to a different culture?','Is it possible to be good friends with someone from a very different cultural background?']
+  }},
+{ id:4, title:'Holidays and tourism', topics:'Types of holiday · Describing places · Travel · Tourism',
+  vocab:['backpacking','city break','couch-surfing','cruise','ecotourism','house swap','package holiday','self-catering','youth hostel','broaden your horizons','get away from it all','recharge your batteries','soak up the sun','see the sights','breathtaking','commercialised','dingy','hospitable','inaccessible','mind-blowing','overcrowded','remote','run-down','put up a tent','travel light','set off'],
+  grammar:['future continuous','future perfect simple and continuous','future time clauses (by the time, as soon as, when)','uses of just','second conditional; I wish / if only'],
+  questions:{
+    warmup:['What was the best holiday you have ever had?','Do you prefer beach holidays or city breaks? Why?','Where would you most like to travel in the future?','What will you be doing this time next year?','Do you like travelling light or do you take a lot of luggage?'],
+    long:['Describe a memorable holiday or trip. Where did you go, what did you do, and what made it special?','Compare different types of holiday, for example a package holiday, backpacking and a cruise. Which would you choose and why?','Describe a beautiful or interesting place in Uzbekistan that you would recommend to a tourist. Explain what visitors can see and do there.','Talk about your dream trip. Where would you go, who with, and what will you have done by the end of it?'],
+    discussion:['Does tourism do more good or more harm to a country? Give examples.','Is it better to travel independently or with a tour group?','Should Uzbekistan try to attract more foreign tourists? What would need to change?','Can travelling really broaden your horizons, or is it just a way to relax?','Will people still travel as much in the future, considering the environment?']
+  }},
+{ id:5, title:'Relationships', topics:'Family · Relating to people · Sibling rivalry · Love and attraction',
+  vocab:['admire','adore','be on the same wavelength','be close to','be wary of','envy','feel sorry for','have a lot in common','look down on','look up to','not see eye to eye','respect','trust','compliment','flatter','insult','lecture','nag','offend','praise','tease','tell sb off','warn','sibling rivalry','get on with','fall out','make up','fall for'],
+  grammar:['the passive (recycle)','negative structures and negative adverbials','negative questions','articles and quantifiers','might / must / can\'t have for speculating about the past'],
+  questions:{
+    warmup:['Who in your family are you closest to? Why?','Is there anyone you really look up to?','What do your parents nag you about?','Do you have brothers or sisters? Do you get on well?','When was the last time you were praised for something?'],
+    long:['Describe your relationship with three different members of your family. Who do you see eye to eye with, and who do you sometimes argue with?','Talk about sibling rivalry. Why does it happen, how does it affect families, and what can parents do about it?','Describe a person you admire and look up to. What is your relationship like, and what have you learned from him or her?','Talk about the qualities that are most important in a good friend or partner, and explain why.'],
+    discussion:['Is it better to be an only child or to have brothers and sisters?','Should parents treat all their children in exactly the same way?','Can people who have nothing in common be close friends?','Do you think social media makes relationships stronger or weaker?','Is it possible for science to explain why people fall in love?']
+  }},
+{ id:6, title:'Health', topics:'Food and nutrition · Fitness · Illnesses and remedies · Fast food',
+  vocab:['dairy products','fizzy drinks','processed foods','pulses','saturated fat','wholegrain','additives','calcium','cholesterol','fibre','protein','vitamins','keep fit','lift weights','go jogging','work out','beat a record','ache','bruise','chest infection','feel dizzy','fracture','sore throat','sprain','painkillers','antibiotics','junk food','addiction','well-balanced','low-fat'],
+  grammar:['the passive with two objects','advanced passive structures (it is said that…, he is thought to…)','have/get something done','obligation and prohibition (recycle)'],
+  questions:{
+    warmup:['How healthy is your diet?','What kind of exercise do you do?','What is your favourite food, and is it healthy?','When was the last time you felt ill? What was wrong?','How many hours do you usually sleep?'],
+    long:['Describe your typical diet. How healthy is it compared with the advice of nutritionists, and what would you change?','Talk about a sport or form of exercise you enjoy or would like to try. Why is it good for you?','Describe a time when you were ill or injured. What were the symptoms, what treatment did you get, and how long did it take to recover?','Talk about why fast food is so popular with young people and what problems it can cause.'],
+    discussion:['Should junk food be banned or taxed more heavily? Why?','Whose responsibility is it to keep young people healthy: parents, schools or the government?','Is it better to exercise alone or as part of a team?','It is often said that "you are what you eat". Do you agree?','Should schools give students more time for sport and physical activity?']
+  }},
+{ id:7, title:'Tall stories', topics:'Truth and lies · Urban legends · Media and fake news',
+  vocab:['cheat','deceive','disguise the truth','distort','exaggerate','fabricate','fib','fool sb','make an excuse','manipulate','mislead','own up to','pass sth off as','photoshop','biased','direct','dishonest','hypocritical','manipulative','open','unethical','white lie','urban legend','fake news','go viral','make up','cover up'],
+  grammar:['reported speech: tense changes','reported questions','reporting verbs (admit, deny, claim, insist, refuse, suggest…)','nouns and dependent prepositions'],
+  questions:{
+    warmup:['Have you ever told a white lie? Why?','Is it ever acceptable to make an excuse to avoid something?','Can you usually tell when someone is lying?','Do you believe everything you read online?','What would you do if a friend gave you a present you didn\'t like?'],
+    long:['Describe a situation when you or someone you know told a lie. Why did they lie, what happened when the truth came out, and what did you learn?','Talk about fake news. What is it, why does it spread so fast on social media, and how can people recognise it?','Tell the story of an urban legend or a strange story you have heard. Then explain whether you believe it and why.','Report a conversation you had recently with a friend or family member. What did they say, ask and suggest?'],
+    discussion:['Is it ever acceptable to lie? Give examples of when it might be the right thing to do.','Should social media companies be responsible for stopping fake news?','Is it dishonest to photoshop pictures before posting them online?','Are politicians and advertisers more dishonest than other people?','Which is worse: telling a lie or keeping a secret?']
+  }},
+{ id:8, title:'Change the world', topics:'Protest · Global issues · Online campaigns · Making a difference',
+  vocab:['demonstrate','protest against','go on a march','hold a rally','sign a petition','shout slogans','campaign for','raise awareness','support a cause','vote','animal rights','climate change','poverty','human rights','unemployment','inequality','pollution','hashtag activism','make a difference','set up','stand up for','give up','take part in'],
+  grammar:['second and third conditional','alternatives to if (unless, provided, as long as, suppose)','mixed conditionals','verb + object + infinitive / -ing / past participle'],
+  questions:{
+    warmup:['Which global issue worries you the most?','Have you ever signed a petition, online or on paper?','If you could change one thing in your city, what would it be?','Who is someone that has made a difference in your country?','Do you think one person can change the world?'],
+    long:['Describe a person, famous or not, who has made a real difference in their community or country. What did they do and why was it important?','Choose a social or environmental issue that is important to you. Explain the problem and suggest what people and governments should do about it.','Talk about online campaigns and hashtag activism. Can sharing a post on social media really change anything? Give examples.','Imagine you had been born 100 years ago. How would your life have been different, and what problems would you have wanted to change?'],
+    discussion:['Are online campaigns as effective as traditional protests? Why?','Should young people be more involved in politics and social issues?','If you were the president for one day, what would you change first?','Whose responsibility is it to deal with climate change: individuals, companies or governments?','Is it better to give money to charity or to volunteer your time?']
+  }},
+{ id:9, title:'Consumerism', topics:'Shopping · Online shopping · Money · Advertising',
+  vocab:['afford','budget','overspend','bargain','haggle','rip off','splash out','shop around','be a waste of money','value for money','checkout','delivery','reviews','wish list','track an order','hard up','rolling in it','make ends meet','tighten your belt','brand','advert','slogan','target audience','consumer'],
+  grammar:['emphasis: cleft sentences (It was … who …, What I need is …)','participle clauses','present perfect simple and continuous (recycle)','conjunctions and prepositions (although, despite, in spite of, whereas)'],
+  questions:{
+    warmup:['Do you prefer shopping in stores or online? Why?','What was the best bargain you have ever bought?','Do you find it easy to save money?','What was the last thing you bought online?','Is shopping a pleasure or a chore for you?'],
+    long:['Describe the best or worst thing you have ever bought. Where did you buy it, why did you choose it, and was it value for money?','Compare shopping online and shopping in traditional shops or bazaars. What are the advantages and disadvantages of each?','Talk about an advert you remember well. What product was it for, what techniques did it use, and did it make you want to buy the product?','Explain how young people can manage their money better. Give practical advice and examples.'],
+    discussion:['Do we buy too many things that we don\'t really need? Why?','Should advertising aimed at children be banned?','Will traditional shops and bazaars disappear because of online shopping?','Does having more money make people happier?','Is it better to buy cheap things often or expensive things that last?']
+  }}
+];
+
+/* ================= STATE ================= */
+const S = { student:'', group:'', unit:null, qs:[], i:0, session:'', uploads:[], results:null };
+const $app = document.getElementById('app');
+const store = {
+  get(k){ try{ return localStorage.getItem(k) }catch(e){ return null } },
+  set(k,v){ try{ localStorage.setItem(k,v) }catch(e){} }
+};
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt = s => `${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`;
+
+function setWho(){
+  document.getElementById('who').innerHTML = S.student
+    ? `${esc(S.student)} · ${esc(S.group)}<br><a href="#" id="logout">сменить</a>` : '';
+  const l = document.getElementById('logout');
+  if (l) l.onclick = e => { e.preventDefault(); S.student=''; S.group=''; store.set('zf_sp_student',''); setWho(); viewLogin(); };
+}
+
+/* ================= VIEWS ================= */
+function viewLogin(){
+  $app.innerHTML = `
+  <div class="card">
+    <h1>Speaking practice</h1>
+    <p class="muted">Еженедельный спикинг по учебнику. ИИ задаёт вопросы по юниту и оценивает ответ по 100-балльной шкале.</p>
+    <label for="nm">Имя и фамилия</label>
+    <input id="nm" autocomplete="name" placeholder="Aziz Karimov" value="${esc(store.get('zf_sp_student')||'')}">
+    <label for="gr">Группа</label>
+    <input id="gr" placeholder="Upper-Int 1" value="${esc(store.get('zf_sp_group')||'')}">
+    <div class="row"><button class="btn block" id="go">Продолжить</button></div>
+    ${SCRIPT_URL ? '' : '<div class="warnbox">Демо-режим: SCRIPT_URL не задан, оценки ненастоящие и не сохраняются.</div>'}
+  </div>`;
+  const go = () => {
+    const n = document.getElementById('nm').value.trim(), g = document.getElementById('gr').value.trim();
+    if (n.length < 3 || !g) { alert('Введите имя и группу'); return; }
+    S.student = n; S.group = g; store.set('zf_sp_student', n); store.set('zf_sp_group', g);
+    setWho(); viewUnits();
+  };
+  document.getElementById('go').onclick = go;
+  document.getElementById('gr').onkeydown = e => { if (e.key === 'Enter') go(); };
+}
+
+function viewUnits(){
+  $app.innerHTML = `
+    <h1>Выберите юнит</h1>
+    <p class="muted">${esc(BOOK)}</p>
+    <div class="units">${UNITS.map((u,k)=>`
+      <button class="unit" data-k="${k}">
+        <div class="n">${u.id === 0 ? 'Introduction' : 'Unit ' + u.id}</div>
+        <div class="t">${esc(u.title)}</div>
+        <div class="s">${esc(u.topics)}</div>
+      </button>`).join('')}</div>`;
+  $app.querySelectorAll('.unit').forEach(b => b.onclick = () => { S.unit = UNITS[+b.dataset.k]; viewIntro(); });
+}
+
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function buildSession(){
+  const used = new Set();
+  S.qs = PLAN.map(p => {
+    const pool = S.unit.questions[p.type].filter(q => !used.has(q));
+    const text = pick(pool.length ? pool : S.unit.questions[p.type]);
+    used.add(text);
+    return { ...p, text };
+  });
+  S.i = 0;
+  S.session = Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+  S.uploads = S.qs.map(() => ({ state:'idle' }));
+  S.results = null;
+}
+
+function viewIntro(){
+  const total = PLAN.reduce((s,p)=>s+p.time,0);
+  $app.innerHTML = `
+  <div class="card">
+    <div class="qmeta">${S.unit.id === 0 ? 'Introduction' : 'Unit ' + S.unit.id}</div>
+    <h1>${esc(S.unit.title)}</h1>
+    <p class="muted">${esc(S.unit.topics)}</p>
+    <h2 class="mt">Как это работает</h2>
+    <ul class="rules">
+      <li>${PLAN.length} вопроса, всего около ${Math.round(total/60)} минут речи.</li>
+      <li>Вопрос появляется только после нажатия «Показать вопрос». Дальше короткое время на подготовку, потом запись.</li>
+      <li>Одна попытка на каждый вопрос, перезаписать нельзя.</li>
+      <li>Говорите полными ответами, приводите причины и примеры. Используйте слова и грамматику юнита.</li>
+      <li>Не читайте с листа: ИИ это замечает.</li>
+    </ul>
+    <p class="muted mt">Найдите тихое место. Разрешите доступ к микрофону.</p>
+    <div class="meter" id="meter"><div></div></div>
+    <div class="row">
+      <button class="btn ghost" id="back">Назад</button>
+      <button class="btn" id="mic">Проверить микрофон</button>
+      <button class="btn" id="start" disabled>Начать</button>
+    </div>
+  </div>`;
+  document.getElementById('back').onclick = () => { Rec.release(); viewUnits(); };
+  document.getElementById('mic').onclick = async () => {
+    try {
+      await Rec.init();
+      Rec.onLevel = v => { const m = document.querySelector('#meter > div'); if (m) m.style.width = Math.min(100, v*300) + '%'; };
+      document.getElementById('mic').textContent = 'Микрофон работает ✓';
+      document.getElementById('start').disabled = false;
+    } catch (e) {
+      alert('Нет доступа к микрофону. Разрешите доступ в настройках браузера и обновите страницу.');
+    }
+  };
+  document.getElementById('start').onclick = () => { buildSession(); viewQuestion(); };
+}
+
+function stepsHtml(){
+  return `<div class="steps">${S.qs.map((_,k)=>`<i class="${k<S.i?'done':k===S.i?'cur':''}"></i>`).join('')}</div>`;
+}
+
+function viewQuestion(){
+  const q = S.qs[S.i];
+  $app.innerHTML = `
+  <div class="card">
+    ${stepsHtml()}
+    <div class="qmeta">Вопрос ${S.i+1} из ${S.qs.length} · ${TYPE_NAME[q.type]} · до ${q.time} сек</div>
+    <div class="hidden-q">Вопрос скрыт. Когда будете готовы, нажмите кнопку.<br>У вас будет ${q.prep} сек на подготовку.</div>
+    <button class="btn block" id="show">Показать вопрос</button>
+  </div>`;
+  document.getElementById('show').onclick = () => prepPhase(q);
+}
+
+function prepPhase(q){
+  $app.innerHTML = `
+  <div class="card">
+    ${stepsHtml()}
+    <div class="qmeta">Вопрос ${S.i+1} из ${S.qs.length} · ${TYPE_NAME[q.type]} · до ${q.time} сек</div>
+    <div class="question">${esc(q.text)}</div>
+    <div class="phase" id="ph">Подготовка</div>
+    <div class="timer" id="tm">${q.prep}</div>
+    <div class="prog prep" id="pg"><div></div></div>
+    <div class="meter" id="meter"><div></div></div>
+    <div class="row"><button class="btn block" id="act">Начать говорить сейчас</button></div>
+  </div>`;
+  const tm = document.getElementById('tm'), pg = document.querySelector('#pg > div');
+  Rec.onLevel = v => { const m = document.querySelector('#meter > div'); if (m) m.style.width = Math.min(100, v*300) + '%'; };
+  const t0 = performance.now();
+  let done = false;
+  const tick = () => {
+    if (done) return;
+    const el = (performance.now()-t0)/1000, left = Math.max(0, q.prep-el);
+    tm.textContent = Math.ceil(left); pg.style.width = (el/q.prep*100)+'%';
+    if (left <= 0) { done = true; recordPhase(q); } else requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+  document.getElementById('act').onclick = () => { done = true; recordPhase(q); };
+}
+
+function recordPhase(q){
+  document.getElementById('ph').innerHTML = '<span class="dot"></span> Идёт запись. Говорите';
+  document.getElementById('pg').classList.remove('prep');
+  const tm = document.getElementById('tm'), pg = document.querySelector('#pg > div'), act = document.getElementById('act');
+  act.textContent = 'Закончить ответ'; act.disabled = true;
+  Rec.start();
+  const t0 = performance.now();
+  let stopped = false;
+  const stop = () => {
+    if (stopped) return; stopped = true;
+    const { b64, seconds } = Rec.stop();
+    upload(S.i, b64, seconds);
+    S.i++;
+    if (S.i < S.qs.length) viewBetween(); else viewWaiting();
+  };
+  const tick = () => {
+    if (stopped) return;
+    const el = (performance.now()-t0)/1000;
+    tm.textContent = fmt(el) + ' / ' + fmt(q.time);
+    pg.style.width = Math.min(100, el/q.time*100)+'%';
+    if (el >= MIN_SECONDS) act.disabled = false;
+    if (el >= q.time) stop(); else requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+  act.onclick = stop;
+}
+
+function viewBetween(){
+  $app.innerHTML = `
+  <div class="card">
+    ${stepsHtml()}
+    <h2>Ответ сохранён ✓</h2>
+    <p class="muted">Он уже отправлен на проверку. Следующий вопрос: ${TYPE_NAME[S.qs[S.i].type]}, до ${S.qs[S.i].time} сек.</p>
+    <div class="chips" id="chips"></div>
+    <div class="row"><button class="btn block" id="next">Следующий вопрос</button></div>
+  </div>`;
+  renderChips();
+  document.getElementById('next').onclick = viewQuestion;
+}
+
+function renderChips(){
+  const el = document.getElementById('chips'); if (!el) return;
+  el.innerHTML = S.uploads.map((u,k)=>{
+    const t = {idle:'', sending:'проверяется…', done:'проверен ✓', error:'ошибка'}[u.state];
+    return t ? `<span class="chip ${u.state==='done'?'ok':u.state==='error'?'err':''}">Вопрос ${k+1}: ${t}</span>` : '';
+  }).join('');
+}
+
+/* ================= NETWORK ================= */
+async function post(body){
+  const r = await fetch(SCRIPT_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(body) });
+  const j = await r.json();
+  if (!j.ok) throw new Error(j.error || 'server error');
+  return j;
+}
+function unitPayload(){ const u = S.unit; return { id:u.id, title:u.title, vocab:u.vocab, grammar:u.grammar }; }
+
+function upload(index, b64, seconds){
+  const u = S.uploads[index];
+  u.state = 'sending'; u.b64 = b64; u.seconds = seconds; renderChips();
+  u.promise = (async () => {
+    for (let a = 0; a < 3; a++) {
+      try {
+        if (!SCRIPT_URL) { await new Promise(r=>setTimeout(r,1200)); u.result = fakeResult(index, seconds); }
+        else {
+          const j = await post({ action:'grade', session:S.session, index, seconds, mime:'audio/wav', audio:b64,
+            question:S.qs[index], unit:unitPayload(), student:S.student, group:S.group });
+          u.result = j.result;
+        }
+        u.state = 'done'; delete u.b64; renderChips(); return;
+      } catch (e) { u.err = e.message; await new Promise(r=>setTimeout(r, 2500*(a+1))); }
+    }
+    u.state = 'error'; renderChips();
+  })();
+}
+
+async function viewWaiting(){
+  Rec.release();
+  $app.innerHTML = `
+  <div class="card center">
+    ${stepsHtml()}
+    <div class="spinner"></div>
+    <h2>ИИ проверяет ответы</h2>
+    <p class="muted">Обычно это занимает 20–60 секунд. Не закрывайте страницу.</p>
+    <div class="chips" id="chips" style="justify-content:center"></div>
+    <div id="retry"></div>
+  </div>`;
+  renderChips();
+  await Promise.all(S.uploads.map(u => u.promise));
+  const failed = S.uploads.map((u,k)=>u.state==='error'?k:-1).filter(k=>k>=0);
+  if (failed.length) {
+    document.getElementById('retry').innerHTML = `
+      <div class="warnbox" style="text-align:left">Не удалось отправить ${failed.map(k=>'вопрос '+(k+1)).join(', ')}. Проверьте интернет и нажмите «Повторить».
+      ${S.uploads[failed[0]].err ? '<br><small>'+esc(S.uploads[failed[0]].err)+'</small>' : ''}</div>
+      <button class="btn" id="rt">Повторить</button>`;
+    document.getElementById('rt').onclick = () => { failed.forEach(k => upload(k, S.uploads[k].b64, S.uploads[k].seconds)); viewWaiting(); };
+    return;
+  }
+  try {
+    if (!SCRIPT_URL) S.results = fakeFinish();
+    else S.results = await post({ action:'finish', session:S.session, count:S.qs.length, types:S.qs.map(q=>q.type),
+      student:S.student, group:S.group, unit:unitPayload() });
+    viewResults();
+  } catch (e) {
+    document.getElementById('retry').innerHTML = `<div class="warnbox">Ошибка: ${esc(e.message)}</div><button class="btn" id="rt">Повторить</button>`;
+    document.getElementById('rt').onclick = viewWaiting;
+  }
+}
+
+function viewResults(){
+  const R = S.results, names = { fluency:'Беглость и связность', vocabulary:'Лексика', grammar:'Грамматика', pronunciation:'Произношение', task:'Ответ на вопрос' };
+  $app.innerHTML = `
+  <div class="card">
+    <div class="qmeta">${S.unit.id === 0 ? 'Introduction' : 'Unit ' + S.unit.id} · ${esc(S.unit.title)}</div>
+    <div class="score"><span class="big">${R.total}</span><span class="of">/ 100</span></div>
+    ${R.reading ? '<div class="warnbox">ИИ заподозрил чтение готового текста. Учитель проверит запись.</div>' : ''}
+    <div class="crit">${Object.keys(names).map(k=>`
+      <div><div class="l"><span>${names[k]}</span><span>${R.criteria[k]} / ${R.max[k]}</span></div>
+      <div class="prog" style="margin:4px 0 0"><div style="width:${R.criteria[k]/R.max[k]*100}%"></div></div></div>`).join('')}
+    </div>
+  </div>
+  <div class="card mt">
+    <h2>Разбор по вопросам</h2>
+    ${R.results.map((r,k)=>`
+      <div class="qres">
+        <h3><span>${k+1}. ${esc(S.qs[k].text)}</span><span>${r.total}/100</span></h3>
+        ${r.transcript ? `<div class="tr">${esc(r.transcript)}</div>` : ''}
+        ${r.comment ? `<p style="font-size:14px">${esc(r.comment)}</p>` : ''}
+        ${(r.mistakes||[]).map(m=>`<div class="mis"><s>${esc(m.said)}</s> → <b>${esc(m.correct)}</b> <span class="muted">${esc(m.note)}</span></div>`).join('')}
+        ${(r.unit_words_used||[]).length ? `<div class="chips">${r.unit_words_used.map(w=>`<span class="chip ok">${esc(w)}</span>`).join('')}</div>` : ''}
+        ${r.tip ? `<div class="tip">${esc(r.tip)}</div>` : ''}
+      </div>`).join('')}
+    <div class="row"><button class="btn ghost block" id="again">К списку юнитов</button></div>
+  </div>`;
+  document.getElementById('again').onclick = viewUnits;
+  window.scrollTo(0,0);
+}
+
+/* ================= DEMO MODE ================= */
+function fakeResult(i, sec){
+  const f = Math.min(1, sec / S.qs[i].time) * (0.6 + Math.random()*0.3);
+  const scores = { fluency:Math.round(25*f), vocabulary:Math.round(25*f), grammar:Math.round(20*f), pronunciation:Math.round(15*f), task:Math.round(15*f) };
+  return { transcript:'(демо-режим: расшифровка появится после подключения Apps Script)', scores,
+    total:Object.values(scores).reduce((a,b)=>a+b,0), mistakes:[{said:'I am agree', correct:'I agree', note:'agree — глагол, to be не нужен'}],
+    unit_words_used:S.unit.vocab.slice(0,2), comment:'Демо-оценка.', tip:'Добавляйте пример к каждому аргументу.', type:S.qs[i].type };
+}
+function fakeFinish(){
+  const W = { warmup:15, long:35, discussion:25 }, rs = S.uploads.map(u=>u.result);
+  let t=0, ws=0; const c={fluency:0,vocabulary:0,grammar:0,pronunciation:0,task:0};
+  rs.forEach(r=>{ const w=W[r.type]; t+=r.total*w; ws+=w; Object.keys(c).forEach(k=>c[k]+=r.scores[k]*w); });
+  Object.keys(c).forEach(k=>c[k]=Math.round(c[k]/ws*10)/10);
+  return { total:Math.round(t/ws), criteria:c, max:{fluency:25,vocabulary:25,grammar:20,pronunciation:15,task:15}, results:rs, reading:false };
+}
+
+/* ================= RECORDER (16 kHz mono WAV) ================= */
+const Rec = {
+  ctx:null, stream:null, node:null, src:null, chunks:[], recording:false, onLevel:null,
+  async init(){
+    if (this.ctx) return;
+    this.stream = await navigator.mediaDevices.getUserMedia({ audio:{ echoCancellation:true, noiseSuppression:true, channelCount:1 } });
+    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    await this.ctx.resume();
+    this.src = this.ctx.createMediaStreamSource(this.stream);
+    this.node = this.ctx.createScriptProcessor(4096, 1, 1);
+    this.node.onaudioprocess = e => {
+      const d = e.inputBuffer.getChannelData(0);
+      let s = 0; for (let k = 0; k < d.length; k += 8) s += d[k]*d[k];
+      if (this.onLevel) this.onLevel(Math.sqrt(s/(d.length/8)));
+      if (this.recording) this.chunks.push(new Float32Array(d));
+    };
+    const mute = this.ctx.createGain(); mute.gain.value = 0;
+    this.src.connect(this.node); this.node.connect(mute); mute.connect(this.ctx.destination);
+  },
+  start(){ this.chunks = []; this.recording = true; },
+  stop(){
+    this.recording = false;
+    const inRate = this.ctx.sampleRate, outRate = 16000;
+    const len = this.chunks.reduce((s,c)=>s+c.length,0);
+    const all = new Float32Array(len); let o = 0; for (const c of this.chunks) { all.set(c,o); o += c.length; }
+    const ratio = inRate/outRate, n = Math.floor(len/ratio), pcm = new Int16Array(n);
+    for (let k = 0; k < n; k++) {
+      const a = Math.floor(k*ratio), b = Math.min(len, Math.floor((k+1)*ratio));
+      let s = 0; for (let j = a; j < b; j++) s += all[j];
+      const v = Math.max(-1, Math.min(1, s/Math.max(1,b-a)));
+      pcm[k] = v < 0 ? v*0x8000 : v*0x7fff;
+    }
+    const buf = new ArrayBuffer(44 + pcm.length*2), dv = new DataView(buf);
+    const w = (p,s) => { for (let k=0;k<s.length;k++) dv.setUint8(p+k, s.charCodeAt(k)); };
+    w(0,'RIFF'); dv.setUint32(4, 36+pcm.length*2, true); w(8,'WAVE'); w(12,'fmt ');
+    dv.setUint32(16,16,true); dv.setUint16(20,1,true); dv.setUint16(22,1,true);
+    dv.setUint32(24,outRate,true); dv.setUint32(28,outRate*2,true); dv.setUint16(32,2,true); dv.setUint16(34,16,true);
+    w(36,'data'); dv.setUint32(40, pcm.length*2, true);
+    new Int16Array(buf, 44).set(pcm);
+    const bytes = new Uint8Array(buf); let bin = '';
+    for (let k = 0; k < bytes.length; k += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(k, k+0x8000));
+    this.chunks = [];
+    return { b64: btoa(bin), seconds: n/outRate };
+  },
+  release(){
+    try { this.stream && this.stream.getTracks().forEach(t=>t.stop()); this.ctx && this.ctx.close(); } catch(e){}
+    this.ctx = null; this.stream = null;
+  }
+};
+
+/* ================= BOOT ================= */
+S.student = store.get('zf_sp_student') || ''; S.group = store.get('zf_sp_group') || '';
+setWho();
+S.student ? viewUnits() : viewLogin();
+</script>
+</body>
+</html>
